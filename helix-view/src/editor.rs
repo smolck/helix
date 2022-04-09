@@ -144,6 +144,7 @@ pub struct Config {
     #[serde(default)]
     pub search: SearchConfig,
     pub lsp: LspConfig,
+    pub autochdir: bool,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
@@ -261,6 +262,7 @@ impl Default for Config {
             true_color: false,
             search: SearchConfig::default(),
             lsp: LspConfig::default(),
+            autochdir: false,
         }
     }
 }
@@ -635,6 +637,13 @@ impl Editor {
         };
 
         self.switch(id, action);
+
+        if self.config().autochdir {
+            if let Err(e) = std::env::set_current_dir(path.parent().unwrap()) {
+                bail!("Couldn't change the current working directory: {}", e);
+            }
+        }
+
         Ok(id)
     }
 
